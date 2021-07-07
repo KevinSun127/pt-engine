@@ -58,6 +58,8 @@ outer_mask_threshold=0, cols=10, search=5):
         # position the coordinates in our point model
         pt_model.import_coordinates(pixels, i*z_layer)
 
+    if not os.exists(save_dir): os.mkdirs(save_dir)
+
     # plot these coordinates onto a dataframe -> write this to a csv
     pd.DataFrame(pt_model.get_pts()).to_csv(os.path.join(save_dir, "save.pt.csv"),
     index=False, header=False)

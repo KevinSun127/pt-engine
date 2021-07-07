@@ -4,6 +4,7 @@ from filters.mask_to_pt import iterate_mask_images
 
 import os
 import time
+import sys
 
 IMG_DIR = "resources/FRAMES"
 MASK_DIR = "resources/MASKS"
@@ -38,8 +39,10 @@ z_layer, z_position, f_length, norm_factor):
             # insert the last image at the beginning
             if images: new_images.insert(images[-1], 0)
 
+        # difference the images and get the mask locations
         save_images = diff_images(new_images, img_dir, mask_dir)
 
+        # iterate through them and extract the points
         iterate_mask_images(save_images, save_dir, target_color,
         z_layer, z_position, f_length, norm_factor)
 

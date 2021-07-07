@@ -54,6 +54,9 @@ def diff_images(images, img_dir, save_dir):
 
     saves = []
 
+    # create save location if it doesn't exist
+    if not os.exists(save_dir): os.mkdirs(save_dir)
+
     for i in range(len(images)-1):
 
         # take two frames ...
