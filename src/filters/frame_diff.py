@@ -38,7 +38,7 @@ def generate_video(image_folder, video_name):
     video.release()  # releasing the video generated
 
 # acquires the border of the object by differencing the initial and current image
-def diff_images(img_dir, save_dir, ext):
+def diff_image_dir(img_dir, save_dir, ext):
 
     # acquires images with the extension
     images = [img for img in os.listdir(img_dir)
@@ -46,11 +46,19 @@ def diff_images(img_dir, save_dir, ext):
 
     images.sort(regex_sort.number_sort)
 
+    return diff_images(images, save_dir)
+
+
+# difference images given an image array
+def diff_images(images, img_dir, save_dir):
+
+    saves = []
+
     for i in range(len(images)-1):
 
         # take two frames ...
-        image1 = cv2.imread(img_dir + '/' + images[0])
-        image2 = cv2.imread(img_dir + '/' + images[i+1])
+        image1 = cv2.imread(os.path.join(img_dir, images[0]))
+        image2 = cv2.imread(os.path.join(img_dir, images[i+1]))
 
         # ... find the difference between them
         diff_image = cv2.subtract(image2, image1)
@@ -58,5 +66,11 @@ def diff_images(img_dir, save_dir, ext):
         # take a certain threshold of a difference
         ret,test = cv2.threshold(diff_image,THRESHOLD,255,cv2.THRESH_BINARY_INV)
 
-        # save the file in the right directory
-        cv2.imwrite(save_dir + '/' + images[i], test)
+        # record the save location
+        save_loc = os.path.join(save_dir, images[i])
+        saves.append(save_loc)
+
+        # save the file
+        cv2.imwrite(save_loc, test)
+
+    return saves

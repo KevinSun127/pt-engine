@@ -18,36 +18,39 @@ Z_POSITION = 1000
 F_LENGTH = .1
 NORM_FACTOR = 30000
 
-# will filter each image in the directory for our points -> writes these to a file
-def iterate_masks(img_dir, save_dir, color, ext, z_layer,
+def iterate_mask_image_dir(image_dir, save_dir, color, ext, z_layer,
 z_position, f_length, norm=1, outer_mask_dir="", outer_mask_color=(0,0,0),
 outer_mask_threshold=0, cols=10, search=5):
 
     # gather the images ...
-    images = [img for img in os.listdir(img_dir) if ext in img]
-    # ... then sort the images in chroNOLOGICAL ORDER
-    images.sort(regex_sort.number_sort)
+    image_paths = [os.path.join(img_dir, img)
+    for img in os.listdir(img_dir) if ext in img]
 
-    if not images: return
+    # ... then sort the images in chroNOLOGICAL ORDER
+    image_paths.sort(regex_sort.number_sort)
+
+    iterate_mask_images(image_paths, save_dir, color, z_layer,
+    z_position, f_length)
+
+# will filter each image in the directory for our points -> writes these to a file
+def iterate_mask_images(image_paths, save_dir, color, z_layer,
+z_position, f_length, norm=1, outer_mask_dir="", outer_mask_color=(0,0,0),
+outer_mask_threshold=0, cols=10, search=5):
+
+    if not image_paths: return
 
     # get the dimensions of the standard image
-    test_frame = cv2.imread(os.path.join(img_dir, images[0]))
+    test_frame = cv2.imread(image_paths[0])
     l,w,d = test_frame.shape
 
     # initialize our point model to store the desired points
     pt_model = flat_to_three.FlatToThree(f_length, z_position, l, w, 1.0/norm)
 
-    # get outer mask points
-    mask_pts = []
-    if outer_mask_dir != "":
-        mask_pts = main_mask.get_mask_pts(outer_mask_dir,
-        outer_mask_color, outer_mask_threshold)
-
     # for each image in the directory
-    for i, img in enumerate(images):
+    for i, image_path in enumerate(image_paths):
 
         # read the image to an array
-        frame = cv2.imread(os.path.join(img_dir, img))
+        frame = cv2.imread(image_path)
 
         # isolate point coordinates
         pixels = isolate_color_px(frame, color)
@@ -82,9 +85,38 @@ def isolate_color_px(frame, color):
     reframe[:,1] == color[1]),
     reframe[:,2] == color[2])
 
-    # return this boolean array in the form of the original image
-    return np.column_stack((np.argwhere(filtered == True)/w,
-    np.argwhere(filtered == True)%w))
+    # convert boolean array to the original dimensions
+    orig_dim = np.reshape(filtered, (l, w))
+
+    # get all the black coordinates
+    coordinates = np.argwhere(orig_dim == 1)
+
+    # get the edges of these black clusters
+    return coordinates_to_edge_pts(coordinates)
+
+# goes down each row of coordinates
+def coordinates_to_edge_pts(coordinates, max_dist=10, min_cluster_len=10):
+
+    # splits between the clusters (non-adjacent coordinates)
+    splits = np.where(coordinates[1:,1] - coordinates[:-1,1] > max_dist)[0]+1
+
+    # divide the array along these coordinates to get the cluters
+    clusters = np.split(coordinates, splits)
+
+    # holds the final points
+    pts = []
+
+    # for each cluster ...
+    for cluster in clusters:
+
+        # ... if the cluster has enough points
+        if len(cluster) > min_cluster_len:
+
+            # take the top and bottom extremes of that cluster
+            pts.append(cluster[0])
+            pts.append(cluster[-1])
+
+    return pts
 
 # create a frame file with the right dimensions
 def create_frm_file(save_dir, cols, rows):
