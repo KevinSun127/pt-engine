@@ -10,7 +10,7 @@ def green_filter(img_file):
     frame = cv2.imread(img_file)
     frame = cv2.GaussianBlur(frame, (5,5), cv2.BORDER_DEFAULT)
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(frame, np.array([60, 0, 0]), np.array([140, 30, 255]))
+    mask = cv2.inRange(frame, np.array([70, 0, 0]), np.array([180, 255, 255]))
     result = cv2.bitwise_and(frame, frame, mask = mask)
     return result
 
@@ -86,9 +86,9 @@ def generate_masks():
     for i in range(1, 81):
         print(i)
         img = green_filter("resources/frames/e" + str(i) + ".jpg")
-        coordinates = isolate_non_color_px(img, (0, 0, 0))
-        map = white_out_coordinates(img, coordinates)
-        cv2.imwrite("resources/green_mask/e" + str(i) + ".jpg", map)
+        # coordinates = isolate_non_color_px(img, (0, 0, 0))
+        # map = white_out_coordinates(img, coordinates)
+        cv2.imwrite("resources/gray_mask/e" + str(i) + ".jpg", img)
 
 if __name__ == "__main__":
     generate_masks()
