@@ -8,3 +8,6 @@ def number_sort(img1, img2):
     if int(num1) == int(num2):
         return 0
     return 1
+
+def number_key(img_name):
+    return int(re.findall(r'.*?([0-9]+)', img_name)[0])

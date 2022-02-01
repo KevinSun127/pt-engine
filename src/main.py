@@ -1,5 +1,5 @@
 from filters.frame_diff import diff_images
-from filters.frame_diff import regex_sort
+from filters.models import regex_sort
 from filters.mask_to_pt import iterate_mask_images
 
 import os
@@ -11,11 +11,10 @@ MASK_DIR = "resources/MASKS"
 SAVE_DIR = "resources/SAVE_PTS"
 EXT = ".jpg"
 TARGET_COLOR = (0, 1, 0)
-NORM_FACTOR = 30000
-Z_LAYER = 1
-Z_POSITION = 1000
-F_LENGTH = .1
-NORM_FACTOR = 30000
+Z_LAYER = .2
+Z_POSITION = 500
+F_LENGTH = 50
+NORM_FACTOR = 250
 
 def main(img_dir, mask_dir, save_dir, target_color, ext,
 z_layer, z_position, f_length, norm_factor):
@@ -35,7 +34,7 @@ z_layer, z_position, f_length, norm_factor):
         # if there are new images
         if new_images:
             # sort them by number
-            new_images.sort(regex_sort.number_sort)
+            new_images = sorted(new_images, key=regex_sort.number_key)
             # insert the last image at the beginning
             if images: new_images.insert(images[-1], 0)
 

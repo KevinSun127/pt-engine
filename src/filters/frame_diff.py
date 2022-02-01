@@ -2,7 +2,9 @@ import os
 import cv2
 from PIL import Image
 import numpy as np
-import regex_sort
+
+from filters.models import flat_to_three
+from filters.models import regex_sort
 
 DIR = "frames"
 SAVE_DIR = "dynamic_masks2"
@@ -55,7 +57,7 @@ def diff_images(images, img_dir, save_dir):
     saves = []
 
     # create save location if it doesn't exist
-    if not os.exists(save_dir): os.mkdirs(save_dir)
+    if not os.path.exists(save_dir): os.makedirs(save_dir)
 
     for i in range(len(images)-1):
 
