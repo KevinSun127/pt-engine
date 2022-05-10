@@ -34,7 +34,7 @@ outer_mask_threshold=0, cols=10, search=5):
 
 # same as above but to avoid color
 def iterate_dir_non_color(image_dir, save_dir, color, ext, z_layer,
-z_position, f_length, norm=1, outer_mask_dir="", outer_mask_color=(0,0,0),
+z_position, f_length, print_statements=False, norm=1, outer_mask_dir="", outer_mask_color=(0,0,0),
 outer_mask_threshold=0, cols=10, search=5):
 
     # gather the images ...
@@ -45,7 +45,7 @@ outer_mask_threshold=0, cols=10, search=5):
     image_paths = sorted(image_paths, key=regex_sort.number_key)
 
     iterate_not_color(image_paths, save_dir, color, z_layer,
-    z_position, f_length, norm)
+    z_position, f_length, norm, print_statements)
 
 
 # will filter each image in the directory for our points -> writes these to a file
@@ -86,7 +86,7 @@ outer_mask_threshold=0, cols=10, search=5):
 
 # will filter each image in the directory for our points -> writes these to a file
 def iterate_not_color(image_paths, save_dir, color, z_layer,
-z_position, f_length, norm=1, cols=10):
+z_position, f_length, print_statements, norm=1, cols=10):
 
     if not image_paths: return
 
@@ -109,7 +109,13 @@ z_position, f_length, norm=1, cols=10):
         # position the coordinates in our point model
         pt_model.import_coordinates(pixels, i*z_layer)
 
+        if print_statements:
+            print(os.path.basename(image_path) + " has been extracted.")
+
     if not os.path.exists(save_dir): os.makedirs(save_dir)
+
+    if print_statements:
+        print("Placing into CSV file ...")
 
     # plot these coordinates onto a dataframe -> write this to a csv
     pd.DataFrame(pt_model.get_pts()).to_csv(os.path.join(save_dir, "save.pt.csv"),
@@ -172,13 +178,11 @@ def isolate_non_color_px(frame, color):
     # get all the black coordinates
     coordinates = np.argwhere(orig_dim == 1)
 
-    # get the edges of these black clusters
-    return coordinates_to_edge_pts(coordinates)
+    return coordinates
 
-# goes down each row of coordinates
-def coordinates_to_edge_pts(coordinates, max_dist=1, min_cluster_len=1):
-
-    # splits between the clusters (non-adjacent coordinates)
+# go down each row
+def coordinates_to_edge_pts(coordinates, max_dist=1, min_cluster_len=10):
+    # split where there's a space greater than max_dist 
     splits = np.where(coordinates[1:,1] - coordinates[:-1,1] > max_dist)[0]+1
 
     # divide the array along these coordinates to get the cluters

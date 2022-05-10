@@ -1,2 +1,8 @@
 src/resources
 src/detection
+*.stl
+*.ply
+*.pcd
+*.zip
+*.txt
+*.avi

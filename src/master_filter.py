@@ -1,18 +1,57 @@
-from filters.mask_to_pt import coordinates_to_edge_pts
+from filters.mask_to_pt import coordinates_to_edge_pts, iterate_dir_non_color
 
 import cv2
 import numpy as np
 import pandas as pd
 import os
 
+EXT = ".png"
+TARGET_COLOR = (0, 0, 0)
+Z_LAYER = .2
+Z_POSITION = 500
+F_LENGTH = 50
+NORM_FACTOR = 250
 
-def green_filter(img_file):
-    frame = cv2.imread(img_file)
-    frame = cv2.GaussianBlur(frame, (5,5), cv2.BORDER_DEFAULT)
+
+TOP_LEFT = (330, 400)
+BOT_RIGHT = (1400, 1575)
+# Z_LAYER = .2
+# Z_POSITION = 500
+# F_LENGTH = 50
+# NORM_FACTOR = 250
+
+
+def zero_out_boundary(img_arr, pt1, pt2):
+    zero_img = np.zeros(np.shape(img_arr))
+    zero_img[pt1[0]:pt2[0], pt1[1]:pt2[1]] = img_arr[pt1[0]:pt2[0], pt1[1]:pt2[1]]
+    return zero_img
+
+# FOR PYRAMID: FRAMES_HSV_LOWER = [80, 0, 0]
+# FOR NOSECONE: FRAMES_HSV_LOWER = [60, 0, 0]
+FRAMES_HSV_LOWER = [0, 0, 0]
+FRAMES_HSV_UPPER = [180, 255, 255]
+
+def hsv_filter(bgr_img, lower, upper):
+    frame = cv2.GaussianBlur(bgr_img, (5,5), cv2.BORDER_DEFAULT)
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(frame, np.array([60, 0, 0]), np.array([140, 30, 255]))
+    mask = cv2.inRange(frame, np.array(lower), np.array(upper))
     result = cv2.bitwise_and(frame, frame, mask = mask)
     return result
+
+FRAMES_BGR_LOWER = [0, 0, 0]
+FRAMES_BGR_UPPER = [255, 90, 100]
+
+def rgb_filter(hsv_img, lower, upper):
+    frame = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR)
+    mask = cv2.inRange(frame, np.array(lower), np.array(upper))
+    result = cv2.bitwise_and(frame, frame, mask = mask)
+    result = cv2.GaussianBlur(result, (5,5), cv2.BORDER_DEFAULT)
+    return result
+
+def mask_filter(img, mask_file):
+    mask = cv2.imread(mask_file)
+    img[mask != 0] = 0
+    return img
 
 def inverse_color_raycasting(img_arr, color):
     # acquire all the edge points for everything NOT that color
@@ -81,18 +120,3 @@ def display_coordinates(img_arr, coordinates):
         map[r, c] = np.array([255, 255, 255])
     cv2.imshow("image", map)
     cv2.waitKey(0)
-
-def generate_masks():
-    for i in range(1, 81):
-        print(i)
-        img = green_filter("resources/frames/e" + str(i) + ".jpg")
-        coordinates = isolate_non_color_px(img, (0, 0, 0))
-        map = white_out_coordinates(img, coordinates)
-        cv2.imwrite("resources/green_mask/e" + str(i) + ".jpg", map)
-
-if __name__ == "__main__":
-    generate_masks()
-
-# img = green_filter("resources/frames/e43.jpg")
-# coordinates = isolate_non_color_px(img, (0, 0, 0))
-# display_coordinates(img, coordinates)

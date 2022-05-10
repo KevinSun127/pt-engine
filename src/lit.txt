@@ -1,5 +1,0 @@
-Cites:
-https://www.researchgate.net/publication/341566896_Techniques_Tools_Platforms_and_Algorithms_in_Close_Range_Photogrammetry_in_Building_3D_Model_and_2D_Representation_of_Objects_and_Complex_Architectures
-https://opengeospatialdata.springeropen.com/articles/10.1186/s40965-017-0027-2
-https://www.researchgate.net/publication/316322333_Photogrammetric_Meshes_and_3D_Points_Cloud_Reconstruction_A_Genetic_Algorithm_Optimization_Procedure
-https://medium.com/@Dok11/neural-networks-in-the-photogrammetry-5f68f05a64e9
